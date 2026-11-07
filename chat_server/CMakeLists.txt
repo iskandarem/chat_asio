@@ -3,7 +3,8 @@ find_package(boost_program_options CONFIG REQUIRED)
 find_package(boost_asio CONFIG REQUIRED)
 
 add_library(chat_server_lib
-	chat.hpp
+	chat.hpp 
+	mem_func_comp_handler.hpp
 )
 
 target_link_libraries(chat_server_lib
