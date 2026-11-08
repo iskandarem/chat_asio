@@ -1,37 +1,50 @@
-#include <array>
 #include <iostream>
+#include <string>
+#include <format>
 #include <boost/asio.hpp>
 
-using boost::asio::ip::tcp;
+namespace asio = boost::asio;
+using tcp  = boost::asio::ip::tcp;
 
 int main(int argc, char* argv[]) {
 	try {
-		if(argc != 2) {
-			std::cerr << "Usage: client <host>" << std::endl;
-			return 1;
-		}
-		
-		boost::asio::io_context io;
-		
-		tcp::resolver resolver{io};
-		tcp::resolver::results_type endpoints = 
-			resolver.resolve(argv[1], "api");
-
+		asio::io_context io;
 		tcp::socket socket{io};
-		boost::asio::connect(socket, endpoints);
-		for(;;) {
-			std::array<char, 128> buf;
-			boost::system::error_code error;
-			size_t len = socket.read_some(boost::asio::buffer(buf), error);
-			if(error == boost::asio::error::eof) break; // Connection closed clenaly by peer.
-			else if(error)
-				throw boost::system::system_error(error); // Some other error.
-			
-			std::cout.write(buf.data(), len);
-		}
+	
+		// connecting to the server thast is accessible at 127.0.0.1:8000	
+		socket.connect(
+			tcp::endpoint(
+				asio::ip::make_address("0.0.0.0"),
+				8000
+			)
+		);
+
+		std::cout << "Connected to the server!\n";
+		
+		std::string message = "Hello world!\n";
+		
+		asio::write(	
+			socket, 
+			asio::buffer(message)
+		);
+
+		asio::streambuf response_buffer;
+		
+		asio::read_until( 
+			socket,
+			response_buffer,
+			'\n'
+		);
+		
+		std::istream response{&response_buffer};
+
+		std::string line;
+		std::getline(response, line);
+		
+		std::cout << std::format("Server: {}\n", line);	
 	}
 	catch(std::exception& e) {
-		std::cerr << e.what() << std::endl;
+		std::cout << std::format("Error: {}", e.what());
 	}
 	return 0;
 }

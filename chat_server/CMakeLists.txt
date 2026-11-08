@@ -5,6 +5,10 @@ find_package(boost_asio CONFIG REQUIRED)
 add_library(chat_server_lib
 	chat.hpp 
 	mem_func_comp_handler.hpp
+	session.hpp
+	session.cpp
+	server.hpp
+	server.cpp
 )
 
 target_link_libraries(chat_server_lib
