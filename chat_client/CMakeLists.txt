@@ -2,6 +2,7 @@ find_package(boost_asio CONFIG REQUIRED)
 
 add_library(chat_client_lib
 	client.hpp
+	client.cpp
 )
 
 target_link_libraries(chat_client_lib
@@ -9,9 +10,9 @@ target_link_libraries(chat_client_lib
 		Boost::asio
 )
 
-target_link_directories(chat_client_lib
+target_include_directories(chat_client_lib
 	PUBLIC
-		${CMAKE_CURRENT_DIR}
+		${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 add_executable(chat_client

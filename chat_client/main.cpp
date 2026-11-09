@@ -1,50 +1,40 @@
+#include <cstdlib>
 #include <iostream>
 #include <string>
-#include <format>
+
 #include <boost/asio.hpp>
 
+#include "client.hpp"
+
 namespace asio = boost::asio;
-using tcp  = boost::asio::ip::tcp;
 
 int main(int argc, char* argv[]) {
+	if (argc != 3) {
+		std::cerr << "Usage: chat_client host port\n";
+		return EXIT_FAILURE;
+	}
+
 	try {
 		asio::io_context io;
-		tcp::socket socket{io};
-	
-		// connecting to the server thast is accessible at 127.0.0.1:8000	
-		socket.connect(
-			tcp::endpoint(
-				asio::ip::make_address("0.0.0.0"),
-				8000
-			)
-		);
+		std::string msg;
+		while(!msg.starts_with(">exit")) {
+			Client client{io, argv[1], argv[2]};
 
-		std::cout << "Connected to the server!\n";
-		
-		std::string message = "Hello world!\n";
-		
-		asio::write(	
-			socket, 
-			asio::buffer(message)
-		);
+			if (!std::getline(std::cin, msg)) {
+				std::cerr << "Error: failed to read a message from standard input\n";
+				return EXIT_FAILURE;
+			}
 
-		asio::streambuf response_buffer;
-		
-		asio::read_until( 
-			socket,
-			response_buffer,
-			'\n'
-		);
-		
-		std::istream response{&response_buffer};
-
-		std::string line;
-		std::getline(response, line);
-		
-		std::cout << std::format("Server: {}\n", line);	
+			std::cout << "Sending '" << msg << "' to the server\n";
+			if (!client.send(msg)) {
+				return EXIT_FAILURE;
+			}
+		}
 	}
-	catch(std::exception& e) {
-		std::cout << std::format("Error: {}", e.what());
+	catch (const std::exception& e) {
+		std::cerr << "Error: " << e.what() << '\n';
+		return EXIT_FAILURE;
 	}
-	return 0;
+
+	return EXIT_SUCCESS;
 }

@@ -1,9 +1,9 @@
 #pragma once 
 #include <boost/asio.hpp>
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <utility>
-#include <iostream>
 
 namespace asio = boost::asio;
 using tcp = asio::ip::tcp;
@@ -16,8 +16,10 @@ private:
 	void write_line();
 	
 	// Data
+	static constexpr std::size_t max_input_size_ = 4096;
+
 	tcp::socket socket_;
-	asio::streambuf input_;
+	asio::streambuf input_{max_input_size_};
 	std::string output_;
 };
 
